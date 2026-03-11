@@ -65,7 +65,17 @@ case "$endpoint" in
     "user": {"login": "reviewer"},
     "body": "Rename this helper",
     "path": "src/app.ts",
+    "start_line": 40,
     "line": 42,
+    "side": "RIGHT",
+    "start_side": "RIGHT",
+    "original_line": 41,
+    "original_start_line": 39,
+    "original_position": 7,
+    "subject_type": "line",
+    "commit_id": "headsha123",
+    "original_commit_id": "basesha456",
+    "diff_hunk": "@@ -39,4 +39,6 @@ export function run() {",
     "html_url": "https://github.com/acme/widgets/pull/77#discussion_r101",
     "created_at": "2026-03-11T08:00:00Z"
   }
@@ -118,8 +128,26 @@ case "$endpoint" in
         "created_at": "2026-03-11T10:00:00Z",
         "author": {"username": "gitlab-reviewer"},
         "position": {
+          "base_sha": "base123",
+          "start_sha": "start456",
+          "head_sha": "head789",
+          "position_type": "text",
           "new_path": "src/service.kt",
-          "new_line": 18
+          "old_path": "src/service.kt",
+          "new_line": 18,
+          "old_line": 17,
+          "line_range": {
+            "start": {
+              "line_code": "abc_17_18",
+              "new_line": 17,
+              "type": "new"
+            },
+            "end": {
+              "line_code": "abc_17_18",
+              "new_line": 18,
+              "type": "new"
+            }
+          }
         },
         "resolvable": true,
         "url": "https://gitlab.example.com/acme/widgets/-/merge_requests/55#note_301"
@@ -163,6 +191,16 @@ test_github_json_split() {
   assert_eq "1" "$(printf '%s' "$output" | jq -r '.code_review_comments.count')" "github code review comment count"
   assert_eq "1" "$(printf '%s' "$output" | jq -r '.discussion_comments.count')" "github discussion comment count"
   assert_eq "src/app.ts" "$(printf '%s' "$output" | jq -r '.code_review_comments.items[0].path')" "github review comment path"
+  assert_eq "40" "$(printf '%s' "$output" | jq -r '.code_review_comments.items[0].start_line')" "github review comment start line"
+  assert_eq "RIGHT" "$(printf '%s' "$output" | jq -r '.code_review_comments.items[0].side')" "github review comment side"
+  assert_eq "RIGHT" "$(printf '%s' "$output" | jq -r '.code_review_comments.items[0].start_side')" "github review comment start side"
+  assert_eq "41" "$(printf '%s' "$output" | jq -r '.code_review_comments.items[0].original_line')" "github review comment original line"
+  assert_eq "39" "$(printf '%s' "$output" | jq -r '.code_review_comments.items[0].original_start_line')" "github review comment original start line"
+  assert_eq "7" "$(printf '%s' "$output" | jq -r '.code_review_comments.items[0].original_position')" "github review comment original position"
+  assert_eq "line" "$(printf '%s' "$output" | jq -r '.code_review_comments.items[0].subject_type')" "github review comment subject type"
+  assert_eq "headsha123" "$(printf '%s' "$output" | jq -r '.code_review_comments.items[0].commit_id')" "github review comment commit id"
+  assert_eq "basesha456" "$(printf '%s' "$output" | jq -r '.code_review_comments.items[0].original_commit_id')" "github review comment original commit id"
+  assert_eq "@@ -39,4 +39,6 @@ export function run() {" "$(printf '%s' "$output" | jq -r '.code_review_comments.items[0].diff_hunk')" "github review comment diff hunk"
   assert_eq "maintainer" "$(printf '%s' "$output" | jq -r '.discussion_comments.items[0].author')" "github discussion author"
 }
 
@@ -176,6 +214,14 @@ test_gitlab_json_split() {
   assert_eq "1" "$(printf '%s' "$output" | jq -r '.code_review_comments.count')" "gitlab code review comment count"
   assert_eq "1" "$(printf '%s' "$output" | jq -r '.discussion_comments.count')" "gitlab discussion comment count"
   assert_eq "src/service.kt" "$(printf '%s' "$output" | jq -r '.code_review_comments.items[0].path')" "gitlab review comment path"
+  assert_eq "18" "$(printf '%s' "$output" | jq -r '.code_review_comments.items[0].new_line')" "gitlab review comment new line"
+  assert_eq "17" "$(printf '%s' "$output" | jq -r '.code_review_comments.items[0].old_line')" "gitlab review comment old line"
+  assert_eq "base123" "$(printf '%s' "$output" | jq -r '.code_review_comments.items[0].base_sha')" "gitlab review comment base sha"
+  assert_eq "start456" "$(printf '%s' "$output" | jq -r '.code_review_comments.items[0].start_sha')" "gitlab review comment start sha"
+  assert_eq "head789" "$(printf '%s' "$output" | jq -r '.code_review_comments.items[0].head_sha')" "gitlab review comment head sha"
+  assert_eq "text" "$(printf '%s' "$output" | jq -r '.code_review_comments.items[0].position_type')" "gitlab review comment position type"
+  assert_eq "17" "$(printf '%s' "$output" | jq -r '.code_review_comments.items[0].line_range.start.new_line')" "gitlab review comment line range start"
+  assert_eq "18" "$(printf '%s' "$output" | jq -r '.code_review_comments.items[0].line_range.end.new_line')" "gitlab review comment line range end"
   assert_eq "gitlab-maintainer" "$(printf '%s' "$output" | jq -r '.discussion_comments.items[0].author')" "gitlab discussion author"
 }
 
@@ -183,8 +229,17 @@ test_docs_cover_two_step_scope_flow() {
   grep -q 'fetch_review_comments.sh' "$ROOT_DIR/SKILL.md"
   grep -q 'code-review comments' "$ROOT_DIR/SKILL.md"
   grep -q 'discussion comments' "$ROOT_DIR/SKILL.md"
+  grep -qi 'only the approved comment categories' "$ROOT_DIR/SKILL.md"
+  grep -qi 'subagents in parallel' "$ROOT_DIR/SKILL.md"
+  grep -qi 'verification report' "$ROOT_DIR/SKILL.md"
+  grep -qi 'before planning fixes' "$ROOT_DIR/SKILL.md"
   grep -qi 'ask the user whether to include code-review comments in scope' "$ROOT_DIR/README.md"
+  grep -qi 'only the approved comment categories' "$ROOT_DIR/README.md"
+  grep -qi 'verification report' "$ROOT_DIR/README.md"
+  grep -qi 'even when tests do not yet cover them' "$ROOT_DIR/README.md"
   grep -qi 'ask the user whether to include discussion comments in scope' "$ROOT_DIR/docs/examples.md"
+  grep -qi 'subagents in parallel' "$ROOT_DIR/docs/examples.md"
+  grep -qi 'confirm the verification report' "$ROOT_DIR/docs/examples.md"
   ! rg -n '/Users/brainco' "$ROOT_DIR/README.md" >/dev/null
 }
 

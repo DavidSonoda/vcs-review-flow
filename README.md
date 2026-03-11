@@ -150,6 +150,11 @@ If comments are present:
 - Ask the user whether to include code-review comments in scope.
 - Ask the user whether to include discussion comments in scope.
 - Pull only the approved comment categories into the review context.
+- Preserve richer remote metadata for approved code-review comments.
+- If any categories are approved, dispatch several subagents in parallel to validate those approved comments.
+- Show a simple verification report.
+- Ask the user to confirm the verification report before planning fixes.
+- If the user confirms, keep the confirmed issues in scope even when tests do not yet cover them.
 
 ### Prepare or Reuse the Worktree
 

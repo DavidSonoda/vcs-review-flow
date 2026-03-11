@@ -51,7 +51,12 @@ bash scripts/fetch_review_comments.sh --repo <repo-root> --number <number> --pla
 Rules:
 - if `code-review comments` exist, ask the user whether to include code-review comments in scope before continuing
 - if `discussion comments` exist, ask the user whether to include discussion comments in scope after the code-review comment decision
-- only pull comment bodies into the active review context for the categories the user approved
+- only the approved comment categories enter the active review scope
+- preserve richer remote metadata for approved code-review comments when the platform provides it
+- if any categories are approved, dispatch several subagents in parallel to validate whether those approved comments still make sense
+- present a simple verification report before planning fixes
+- ask the user to confirm the verification report before planning fixes
+- if the user confirms, treat the confirmed comments as in-scope issues even when tests do not yet cover them
 
 5. Inspect repository policy before touching worktrees.
 
@@ -81,11 +86,19 @@ If the environment exposes a review skill such as `requesting-code-review`, invo
 - the user's review request
 - the resolved base/head context
 - the approved comment categories plus their pulled comment content
+- the richer remote metadata for approved code-review comments
 - the prepared worktree path
 
 If no dedicated review skill is available, perform the review directly with a code-review mindset.
 
-8. After review, produce a change plan.
+8. If approved comment categories were selected, validate them before fix planning.
+
+For approved comments:
+- dispatch several subagents in parallel to classify each selected comment as likely valid, unclear, or likely stale
+- produce a verification report with a short reason for each classification
+- ask the user to confirm the verification report before planning fixes
+
+9. After review and any required confirmation, produce a change plan.
 
 The change plan must include:
 - key findings being addressed
@@ -93,7 +106,9 @@ The change plan must include:
 - implementation direction
 - verification steps
 
-9. Present exactly these finish options.
+If the user confirmed approved comments as valid, include them in the change plan even when tests do not yet cover them.
+
+10. Present exactly these finish options.
 
 ```text
 1. Implement locally on the original source branch, commit, and push to update the MR/PR.

@@ -80,7 +80,17 @@ normalize_github_comments() {
             author: (.user.login // .user.name // "unknown"),
             body: (.body // ""),
             path: (.path // ""),
+            start_line: (if .start_line == null then null else (.start_line | tostring) end),
             line: (if .line == null then "" else (.line | tostring) end),
+            side: (.side // null),
+            start_side: (.start_side // null),
+            subject_type: (.subject_type // null),
+            original_line: (if .original_line == null then null else (.original_line | tostring) end),
+            original_start_line: (if .original_start_line == null then null else (.original_start_line | tostring) end),
+            original_position: (if .original_position == null then null else (.original_position | tostring) end),
+            commit_id: (.commit_id // null),
+            original_commit_id: (.original_commit_id // null),
+            diff_hunk: (.diff_hunk // null),
             url: (.html_url // ""),
             created_at: (.created_at // "")
           }))
@@ -150,6 +160,16 @@ normalize_gitlab_comments() {
               else ""
               end
             ),
+            new_path: (.position.new_path // null),
+            old_path: (.position.old_path // null),
+            new_line: (if (.position.new_line // null) != null then (.position.new_line | tostring) else null end),
+            old_line: (if (.position.old_line // null) != null then (.position.old_line | tostring) else null end),
+            base_sha: (.position.base_sha // null),
+            start_sha: (.position.start_sha // null),
+            head_sha: (.position.head_sha // null),
+            position_type: (.position.position_type // null),
+            line_range: (.position.line_range // null),
+            position: (.position // null),
             url: (.url // .web_url // ""),
             created_at: (.created_at // "")
           }))

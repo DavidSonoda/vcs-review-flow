@@ -31,6 +31,12 @@ If `code-review comments` are present, ask the user whether to include code-revi
 
 If `discussion comments` are present, ask the user whether to include discussion comments in scope.
 
+Only the approved comment categories move forward.
+
+For approved comments, dispatch several subagents in parallel to validate whether the comments still make sense.
+
+Then confirm the verification report with the user before planning fixes.
+
 ## Inspect Repo Policy
 
 ```bash
