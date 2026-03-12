@@ -1,6 +1,6 @@
 {
   "name": "@minakoto00/skills",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "Convenience installer for skills hosted in minakoto00/vcs-review-flow.",
   "bin": {
     "minakoto-skills": "bin/skills.js"
