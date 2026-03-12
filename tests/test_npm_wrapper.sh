@@ -45,7 +45,16 @@ test_wrapper_rejects_unknown_skill() {
   assert_contains "$output" "unsupported skill" "wrapper explains unsupported skill names"
 }
 
+test_package_does_not_publish_skills_cli_name() {
+  local bin_name
+
+  bin_name=$(node -p 'const pkg=require(process.argv[1]); typeof pkg.bin === "string" ? "skills" : Object.keys(pkg.bin)[0]' "$ROOT_DIR/package.json")
+
+  assert_eq "minakoto-skills" "$bin_name" "wrapper package should not publish a binary named skills"
+}
+
 test_wrapper_dry_run_targets_skills_cli_install
 test_wrapper_rejects_unknown_skill
+test_package_does_not_publish_skills_cli_name
 
 printf 'PASS\n'
