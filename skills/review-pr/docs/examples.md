@@ -47,6 +47,14 @@ Those same-pattern candidates are reported separately from the original issues.
 
 Then confirm the verification report with the user before planning fixes.
 
+After comment handling, ask the mandatory additional-review question before planning changes, even if there were no unresolved comments or no validated comment issues left:
+
+1. `Review full changeset for additional issues`
+2. `Do not do additional reviews`
+3. `Specify otherwise`
+
+If the user picks the first option, run a full review of the prepared changeset for additional issues beyond the remote comments and report those findings separately before producing the final change plan.
+
 ## Inspect Repo Policy
 
 ```bash

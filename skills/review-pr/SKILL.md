@@ -62,6 +62,10 @@ Rules:
 - present a simple verification report before planning fixes
 - ask the user to confirm the verification report before planning fixes
 - if the user confirms, treat the confirmed comments as in-scope issues even when tests do not yet cover them
+- after comment handling, ask the user to choose one of these options before planning changes:
+  1. `Review full changeset for additional issues`
+  2. `Do not do additional reviews`
+  3. `Specify otherwise`
 
 5. Inspect repository policy before touching worktrees.
 
@@ -85,18 +89,7 @@ Rules:
 - if the matching worktree does not exist, create it in the repo-approved location
 - if the existing worktree has uncommitted changes, stop and ask before syncing
 
-7. Run review from the prepared worktree.
-
-If the environment exposes a review skill such as `requesting-code-review`, invoke it with:
-- the user's review request
-- the resolved base/head context
-- the approved comment categories plus their pulled comment content
-- the richer remote metadata for approved code-review comments
-- the prepared worktree path
-
-If no dedicated review skill is available, perform the review directly with a code-review mindset.
-
-8. If approved comment categories were selected, validate them before fix planning.
+7. If approved comment categories were selected, validate them before additional review or fix planning.
 
 For approved comments:
 - exclude resolved code-review feedback from active validation by default
@@ -108,7 +101,29 @@ For approved comments:
 - produce a verification report with a short reason for each classification
 - ask the user to confirm the verification report before planning fixes
 
-9. After review and any required confirmation, produce a change plan.
+8. Ask the user to choose one of these options before planning changes, even when no comments were approved or no unresolved comments remain:
+
+```text
+1. Review full changeset for additional issues.
+2. Do not do additional reviews.
+3. Specify otherwise.
+```
+
+9. If the user chooses `Review full changeset for additional issues`, run a full code review session from the prepared worktree.
+
+If the environment exposes a review skill such as `requesting-code-review`, invoke it with:
+- the user's review request
+- the resolved base/head context
+- the approved comment categories plus their pulled comment content
+- the richer remote metadata for approved code-review comments
+- the prepared worktree path
+- instructions to review the full changeset for issues beyond the remote comments
+
+If no dedicated review skill is available, perform the review directly with a code-review mindset across the full changeset.
+
+Keep any new findings separate from the remote-comment verification report.
+
+10. After any required confirmation and any requested full review, produce a change plan.
 
 The change plan must include:
 - key findings being addressed
@@ -117,6 +132,7 @@ The change plan must include:
 - verification steps
 
 If the user confirmed approved comments as valid, include them in the change plan even when tests do not yet cover them.
+If the user requested a full changeset review, include any additional findings from that review in the change plan alongside the confirmed remote-comment issues.
 
 10. Present exactly these finish options.
 

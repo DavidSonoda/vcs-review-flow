@@ -11,6 +11,7 @@
 - reuses or creates the correct local worktree for the MR/PR source branch
 - syncs the worktree to the remote branch head
 - supports a review flow that ends with a change plan and explicit finish options
+- asks a mandatory additional-review question before change planning so the session cannot stop at comment verification alone
 - can post proposed changes back as a GitLab or GitHub comment instead of implementing locally
 
 ## Prerequisites
@@ -45,9 +46,11 @@ From a repository you want to review, the core steps are:
 5. Ask the user whether to include code-review comments in scope.
 6. Ask the user whether to include discussion comments in scope.
 7. Reuse or create the source-branch worktree.
-8. Run review in that worktree.
-9. Produce a change plan.
-10. Choose whether to implement locally or post the proposal remotely.
+8. Validate approved comments when any categories were included.
+9. Ask the mandatory additional-review question.
+10. If requested, run a full review of the changeset for additional issues.
+11. Produce a change plan.
+12. Choose whether to implement locally or post the proposal remotely.
 
 If comments are present:
 - ask the user whether to include code-review comments in scope
@@ -61,6 +64,14 @@ If comments are present:
 - report same-pattern candidates separately from the original issues
 - show a verification report before planning fixes
 - if the user confirms, keep the confirmed issues in scope even when tests do not yet cover them
+
+After comment handling, there is a mandatory additional-review question even if no unresolved comments exist or no approved comments remain valid. Ask the user to choose one of these options before planning changes:
+
+1. `Review full changeset for additional issues`
+2. `Do not do additional reviews`
+3. `Specify otherwise`
+
+If the user chooses the first option, run a full review session in the prepared worktree and keep any new findings separate from the remote-comment verification output until they are merged into the final change plan.
 
 ## Flowchart
 
@@ -77,14 +88,19 @@ flowchart TD
     G -->|No| H
     H --> I[Inspect AGENTS.md and CLAUDE.md policy]
     I --> J[Reuse or create worktree]
-    J --> K[Run review in worktree]
-    K --> L[Validate approved comments and same-pattern candidates]
-    L --> M[Confirm verification report]
-    M --> N[Produce change plan]
-    N --> O{Finish option}
-    O -->|1| P[Implement on original source branch]
-    O -->|2| Q[Implement, then merge or cherry-pick elsewhere]
-    O -->|3| R[Post comment-only proposal]
+    J --> K[Validate approved comments and same-pattern candidates]
+    K --> L[Confirm verification report]
+    L --> M{Additional review decision}
+    M -->|Review full changeset for additional issues| N[Run full changeset review]
+    M -->|Do not do additional reviews| O[Skip additional review]
+    M -->|Specify otherwise| P[Handle custom instruction]
+    N --> Q[Produce change plan]
+    O --> Q
+    P --> Q
+    Q --> R{Finish option}
+    R -->|1| S[Implement on original source branch]
+    R -->|2| T[Implement, then merge or cherry-pick elsewhere]
+    R -->|3| U[Post comment-only proposal]
 ```
 
 ## Local Development

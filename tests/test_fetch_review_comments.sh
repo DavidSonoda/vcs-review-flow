@@ -455,6 +455,10 @@ test_docs_cover_two_step_scope_flow() {
   grep -qi 'subagents in parallel' "$SKILL_DIR/SKILL.md"
   grep -qi 'verification report' "$SKILL_DIR/SKILL.md"
   grep -qi 'before planning fixes' "$SKILL_DIR/SKILL.md"
+  grep -qi 'ask the user to choose one of these options before planning changes' "$SKILL_DIR/SKILL.md"
+  grep -Fq 'Review full changeset for additional issues' "$SKILL_DIR/SKILL.md"
+  grep -Fq 'Do not do additional reviews' "$SKILL_DIR/SKILL.md"
+  grep -Fq 'Specify otherwise' "$SKILL_DIR/SKILL.md"
   grep -q '^# VCS Review Flow$' "$ROOT_DIR/README.md"
   grep -q 'npx skills add minakoto00/vcs-review-flow --skill review-pr' "$ROOT_DIR/README.md"
   grep -q 'npx @minakoto00/skills install review-pr' "$ROOT_DIR/README.md"
@@ -474,6 +478,10 @@ test_docs_cover_two_step_scope_flow() {
   grep -qi 'same-pattern candidates separately from the original issues' "$SKILL_DIR/README.md"
   grep -qi 'verification report' "$SKILL_DIR/README.md"
   grep -qi 'even when tests do not yet cover them' "$SKILL_DIR/README.md"
+  grep -qi 'mandatory additional-review question' "$SKILL_DIR/README.md"
+  grep -Fq 'Review full changeset for additional issues' "$SKILL_DIR/README.md"
+  grep -Fq 'Do not do additional reviews' "$SKILL_DIR/README.md"
+  grep -Fq 'Specify otherwise' "$SKILL_DIR/README.md"
   grep -qi 'ask the user whether to include discussion comments in scope' "$SKILL_DIR/docs/examples.md"
   grep -qi 'subagents in parallel' "$SKILL_DIR/docs/examples.md"
   grep -qi 'resolved code-review feedback is excluded by default' "$SKILL_DIR/docs/examples.md"
@@ -481,6 +489,10 @@ test_docs_cover_two_step_scope_flow() {
   grep -qi 'search only within changed files for same-pattern candidates' "$SKILL_DIR/docs/examples.md"
   grep -qi 'same-pattern candidates are reported separately from the original issues' "$SKILL_DIR/docs/examples.md"
   grep -qi 'confirm the verification report' "$SKILL_DIR/docs/examples.md"
+  grep -qi 'mandatory additional-review question' "$SKILL_DIR/docs/examples.md"
+  grep -Fq 'Review full changeset for additional issues' "$SKILL_DIR/docs/examples.md"
+  grep -Fq 'Do not do additional reviews' "$SKILL_DIR/docs/examples.md"
+  grep -Fq 'Specify otherwise' "$SKILL_DIR/docs/examples.md"
   ! rg -n '/Users/brainco' "$ROOT_DIR/README.md" >/dev/null
 }
 
