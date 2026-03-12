@@ -251,6 +251,87 @@ case "$endpoint" in
 ]
 JSON
     ;;
+  projects/acme%2Fwidgets/merge_requests/222/discussions)
+    cat <<'JSON'
+[
+  {
+    "id": "mixed-thread-resolved",
+    "individual_note": false,
+    "notes": [
+      {
+        "id": 401,
+        "system": false,
+        "body": "This one is resolved on the note itself.",
+        "created_at": "2026-03-12T10:00:00Z",
+        "author": {"username": "gitlab-reviewer"},
+        "position": {
+          "base_sha": "base222",
+          "start_sha": "start222",
+          "head_sha": "head222",
+          "position_type": "text",
+          "new_path": "src/service.kt",
+          "old_path": "src/service.kt",
+          "new_line": 21,
+          "old_line": 20
+        },
+        "resolvable": true,
+        "resolved": true,
+        "resolved_at": "2026-03-12T10:30:00Z",
+        "resolved_by": {
+          "username": "lead-reviewer"
+        },
+        "url": "https://gitlab.example.com/acme/widgets/-/merge_requests/222#note_401"
+      },
+      {
+        "id": 402,
+        "system": false,
+        "body": "changed this line in version 4",
+        "created_at": "2026-03-12T10:31:00Z",
+        "author": {"username": "gitlab-system"},
+        "position": {
+          "base_sha": "base222",
+          "start_sha": "start222",
+          "head_sha": "head222",
+          "position_type": "text",
+          "new_path": "src/service.kt",
+          "old_path": "src/service.kt",
+          "new_line": 21,
+          "old_line": 20
+        },
+        "resolvable": false,
+        "url": "https://gitlab.example.com/acme/widgets/-/merge_requests/222#note_402"
+      }
+    ]
+  },
+  {
+    "id": "mixed-thread-unresolved",
+    "individual_note": false,
+    "notes": [
+      {
+        "id": 403,
+        "system": false,
+        "body": "This one is still unresolved on the note.",
+        "created_at": "2026-03-12T11:00:00Z",
+        "author": {"username": "gitlab-reviewer"},
+        "position": {
+          "base_sha": "base333",
+          "start_sha": "start333",
+          "head_sha": "head333",
+          "position_type": "text",
+          "new_path": "src/other.kt",
+          "old_path": "src/other.kt",
+          "new_line": 34,
+          "old_line": 33
+        },
+        "resolvable": true,
+        "resolved": false,
+        "url": "https://gitlab.example.com/acme/widgets/-/merge_requests/222#note_403"
+      }
+    ]
+  }
+]
+JSON
+    ;;
   *)
     printf 'unexpected glab endpoint: %s\n' "$endpoint" >&2
     exit 1
@@ -338,6 +419,30 @@ test_gitlab_json_split() {
   assert_eq "gitlab-maintainer" "$(printf '%s' "$output" | jq -r '.discussion_comments.items[0].author')" "gitlab discussion author"
 }
 
+test_gitlab_prefers_note_level_resolution() {
+  local fake_bin="$TMP_DIR/fake-bin"
+  make_fake_bin "$fake_bin"
+
+  local output
+  output=$(PATH="$fake_bin:$PATH" bash "$SCRIPT" --repo "$ROOT_DIR" --platform gitlab --number 222 --json)
+
+  assert_eq "1" "$(printf '%s' "$output" | jq -r '.code_review_comments.count')" "gitlab active count uses note-level unresolved state"
+  assert_eq "1" "$(printf '%s' "$output" | jq -r '.excluded_resolved_comments.count')" "gitlab excluded count uses note-level resolved state"
+
+  assert_eq "403" "$(printf '%s' "$output" | jq -r '.code_review_comments.items[0].id')" "gitlab unresolved note stays active"
+  assert_eq "unresolved" "$(printf '%s' "$output" | jq -r '.code_review_comments.items[0].thread_state')" "gitlab unresolved note state"
+  assert_eq "false" "$(printf '%s' "$output" | jq -r '.code_review_comments.items[0].thread_resolved')" "gitlab unresolved note flag"
+  assert_eq "src/other.kt" "$(printf '%s' "$output" | jq -r '.code_review_comments.items[0].path')" "gitlab unresolved note path"
+
+  assert_eq "401" "$(printf '%s' "$output" | jq -r '.excluded_resolved_comments.items[0].id')" "gitlab resolved note excluded"
+  assert_eq "resolved" "$(printf '%s' "$output" | jq -r '.excluded_resolved_comments.items[0].thread_state')" "gitlab resolved note state"
+  assert_eq "true" "$(printf '%s' "$output" | jq -r '.excluded_resolved_comments.items[0].thread_resolved')" "gitlab resolved note flag"
+  assert_eq "lead-reviewer" "$(printf '%s' "$output" | jq -r '.excluded_resolved_comments.items[0].resolved_by.username')" "gitlab resolved note keeps resolver"
+  assert_eq "2026-03-12T10:30:00Z" "$(printf '%s' "$output" | jq -r '.excluded_resolved_comments.items[0].resolved_at')" "gitlab resolved note keeps resolved timestamp"
+
+  assert_eq "0" "$(printf '%s' "$output" | jq -r '[.code_review_comments.items[], .excluded_resolved_comments.items[]] | flatten | map(select(.id == "402")) | length')" "gitlab non-resolvable diff update note stays out of review buckets"
+}
+
 test_docs_cover_two_step_scope_flow() {
   grep -q 'fetch_review_comments.sh' "$SKILL_DIR/SKILL.md"
   grep -q 'code-review comments' "$SKILL_DIR/SKILL.md"
@@ -381,6 +486,7 @@ test_docs_cover_two_step_scope_flow() {
 
 test_github_json_split
 test_gitlab_json_split
+test_gitlab_prefers_note_level_resolution
 test_docs_cover_two_step_scope_flow
 
 printf 'PASS\n'

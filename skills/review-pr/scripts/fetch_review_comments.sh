@@ -175,19 +175,26 @@ normalize_gitlab_comments() {
           | . as $discussion
           | $note
           | select(
-              (.position // null) != null
-              or (.line_code // null) != null
+              (
+                (.position // null) != null
+                or (.line_code // null) != null
+              )
+              and (
+                if has("resolvable") then .resolvable
+                else true
+                end
+              )
             )
           | . + {
               thread_id: ($discussion.id // null),
-              thread_resolved: ($discussion.resolved // false),
+              thread_resolved: (.resolved // $discussion.resolved // false),
               thread_state: (
-                if ($discussion.resolved // false) then "resolved"
+                if (.resolved // $discussion.resolved // false) then "resolved"
                 else "unresolved"
                 end
               ),
-              resolved_by: ($discussion.resolved_by // null),
-              resolved_at: ($discussion.resolved_at // null)
+              resolved_by: (.resolved_by // $discussion.resolved_by // null),
+              resolved_at: (.resolved_at // $discussion.resolved_at // null)
             }
         ];
 
